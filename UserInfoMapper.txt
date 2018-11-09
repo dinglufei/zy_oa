@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.tedu.dao.UserInfoDao">
+
+	<!-- resultMap封装不规则的字段 type：结果集要封装在哪个实体对象上就是这个对象的全路径（别名） id：唯一标识 -->
+	<resultMap type="UserInfo" id="userRM">
+		<!-- 配置主键信息 column：表里的字段名
+					  property：实体的属性名 -->
+		<id column="id" property="id" />
+		<!-- 其他属性 -->
+		<result column="user_name" property="userName" />
+		<result column="user_addr" property="userAddr" />
+		<result column="user_age" property="userAge" />
+
+	</resultMap>
+
+	<resultMap type="UserInfo" id="userextraRM" extends="userRM">
+		<!-- association一对一的关系描述 
+			 property：是关联关系中对象的属性名 
+			 javaType：userExtra的全路径名 -->
+		<association property="userExtra" javaType="cn.tedu.pojo.UserExtra">
+			<id column="id" property="id" />
+			<result column="user_id" property="work"  />
+			<result column="work" property="salary"  />
+			<result column="salary" property="userId"  />
+		</association>
+	</resultMap>
+
+
+
+	<!-- 查询用户表对应的扩展信息 -->
+	<select id="findExtraByUser" resultMap="userRM">
+		select * from
+		user_info
+		t1,user_extra t2
+		where
+		t1.id=t2.user_id
+		and t1.id=#{id}
+	</select>
+
+
+	<!-- 绑定一对多的对象关系的order
+		type:查询出的结果要封装给哪个实体
+	 -->
+	<resultMap type="UserInfo" id="orderRM" extends="userRM">
+		<!-- collection+ofType描述乙方order
+			property:
+			
+		 -->
+		<collection property="orders" ofType="cn.tedu.pojo.Orders">
+			<!-- 描述关联对象orders的信息 -->
+			<id column="id" property="id" />
+			<result column="user_id" property="userId"  />
+			<result column="order_no" property="orderNo"  />
+			<result column="order_desc" property="orderDesc"  />
+			<result column="price" property="price"  />
+		</collection>
+	</resultMap>
+
+	<!-- 根据用户id查询所有订单信息 -->
+	<select id="findOrdersByUser" resultMap="orderRM">
+		select
+			t1.id,
+			t1.user_name,
+			t1.user_addr,
+			t1.user_age,
+			t2.id,
+			t2.user_id,
+			t2.order_no,
+			t2.order_desc,
+			t2.price
+
+		from
+			user_info t1,orders t2
+		where
+			t1.id=t2.user_id
+		and
+			t1.id=${id}
+	</select>
+</mapper>
+
+
